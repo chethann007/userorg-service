@@ -10,21 +10,19 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchResponse.Clusters;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.keys.JsonKey;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.mockito.Mockito;
 
 public class ElasticSearchHelperTest {
 
@@ -191,4 +189,23 @@ public class ElasticSearchHelperTest {
       assertTrue(queryString.contains("fuzziness"));
       assertTrue(queryString.contains("AUTO"));
   }
+
+  @Test
+  public void testAddAdditionalPropertiesNestedExists() {
+      BoolQueryBuilder query = QueryBuilders.boolQuery();
+      Map<String, String> nestedFields = new HashMap<>();
+      nestedFields.put("nestedField", "nestedPath");
+
+      Map.Entry<String, Object> entry = new java.util.AbstractMap.SimpleEntry<>(JsonKey.NESTED_EXISTS, nestedFields);
+      Map<String, Float> constraints = new HashMap<>();
+
+      ElasticSearchHelper.addAdditionalProperties(query, entry, constraints);
+
+      String queryString = query.toString();
+      assertTrue(queryString.contains("nested"));
+      assertTrue(queryString.contains("nestedPath"));
+      assertTrue(queryString.contains("exists"));
+      assertTrue(queryString.contains("nestedField"));
+  }
+
 }
