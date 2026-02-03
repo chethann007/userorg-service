@@ -40,7 +40,7 @@
                     <!--<reuseForks>false</reuseForks>-->
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <argLine>
-                        @{argLine} --illegal-access=permit
+                        @{argLine} --illegal-access=permit --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
                     </argLine>
                     <properties>
                         <property>

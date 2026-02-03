@@ -6,11 +6,21 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchResponse.Clusters;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 import org.sunbird.dto.SearchDTO;
@@ -122,5 +132,63 @@ public class ElasticSearchHelperTest {
     QueryBuilder query = ElasticSearchHelper.createLexicalQuery("field", operation, null);
     assertNotNull(query);
     assertTrue(query.toString().contains("~suffix"));
+  }
+
+  @Test
+  public void testAddAdditionalPropertiesFilters() {
+      BoolQueryBuilder query = QueryBuilders.boolQuery();
+      Map<String, Object> entryValue = new HashMap<>();
+      entryValue.put("status", "active");
+
+      Map.Entry<String, Object> entry = new java.util.AbstractMap.SimpleEntry<>(JsonKey.FILTERS, entryValue);
+      Map<String, Float> constraints = new HashMap<>();
+
+      ElasticSearchHelper.addAdditionalProperties(query, entry, constraints);
+
+      String queryString = query.toString();
+      assertTrue(queryString.contains("status.raw"));
+      assertTrue(queryString.contains("active"));
+  }
+
+  @Test
+  public void testAddAdditionalPropertiesExists() {
+      BoolQueryBuilder query = QueryBuilders.boolQuery();
+      List<String> fields = Arrays.asList("field1", "field2");
+
+      Map.Entry<String, Object> entry = new java.util.AbstractMap.SimpleEntry<>(JsonKey.EXISTS, fields);
+      Map<String, Float> constraints = new HashMap<>();
+
+      ElasticSearchHelper.addAdditionalProperties(query, entry, constraints);
+
+      String queryString = query.toString();
+      assertTrue(queryString.contains("exists"));
+      assertTrue(queryString.contains("field1"));
+      assertTrue(queryString.contains("field2"));
+  }
+
+  @Test
+  public void testAddAdditionalPropertiesNotExists() {
+      BoolQueryBuilder query = QueryBuilders.boolQuery();
+      List<String> fields = Arrays.asList("field1");
+
+      Map.Entry<String, Object> entry = new java.util.AbstractMap.SimpleEntry<>(JsonKey.NOT_EXISTS, fields);
+      Map<String, Float> constraints = new HashMap<>();
+
+      ElasticSearchHelper.addAdditionalProperties(query, entry, constraints);
+
+      String queryString = query.toString();
+      assertTrue(queryString.contains("must_not"));
+      assertTrue(queryString.contains("exists"));
+      assertTrue(queryString.contains("field1"));
+  }
+
+  @Test
+  public void testCreateFuzzyMatchQuery() {
+      BoolQueryBuilder query = QueryBuilders.boolQuery();
+      ElasticSearchHelper.createFuzzyMatchQuery(query, "name", "sunbird");
+
+      String queryString = query.toString();
+      assertTrue(queryString.contains("fuzziness"));
+      assertTrue(queryString.contains("AUTO"));
   }
 }

@@ -116,4 +116,17 @@ public class SearchDTOTest {
     searchDTO.addAdditionalProperty(key, value);
     assertEquals(value, searchDTO.getAdditionalProperty(key));
   }
+
+  @Test
+  public void testGroupQueryUsage() {
+      SearchDTO searchDTO = new SearchDTO();
+      List<Map<String, Object>> groupQuery = new ArrayList<>();
+      Map<String, Object> query1 = new HashMap<>();
+      query1.put("field", "value");
+      groupQuery.add(query1);
+
+      searchDTO.setGroupQuery(groupQuery);
+      assertEquals(1, searchDTO.getGroupQuery().size());
+      assertEquals("value", searchDTO.getGroupQuery().get(0).get("field"));
+  }
 }
