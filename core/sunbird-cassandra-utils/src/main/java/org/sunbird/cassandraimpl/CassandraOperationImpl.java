@@ -105,51 +105,6 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   }
 
   /**
-   * Creates a BoundStatement from a PreparedStatement.
-   * This method exists to facilitate unit testing by allowing the BoundStatement creation to be mocked/overridden.
-   *
-   * @param statement The PreparedStatement to bind.
-   * @return A new BoundStatement.
-   */
-  protected BoundStatement createBoundStatement(PreparedStatement statement) {
-    return new BoundStatement(statement);
-  }
-
-  // Wrapper methods for CassandraUtil to facilitate unit testing
-
-  protected String getPreparedStatement(String keyspaceName, String tableName, Map<String, Object> map) {
-    return CassandraUtil.getPreparedStatement(keyspaceName, tableName, map);
-  }
-
-  protected Response createResponse(ResultSet results) {
-    return CassandraUtil.createResponse(results);
-  }
-
-  protected String getUpdateQueryStatement(String keyspaceName, String tableName, Map<String, Object> map) {
-    return CassandraUtil.getUpdateQueryStatement(keyspaceName, tableName, map);
-  }
-
-  protected String getSelectStatement(String keyspaceName, String tableName, List<String> properties) {
-    return CassandraUtil.getSelectStatement(keyspaceName, tableName, properties);
-  }
-
-  protected String processExceptionForUnknownIdentifier(Exception e) {
-    return CassandraUtil.processExceptionForUnknownIdentifier(e);
-  }
-
-  protected void createQuery(String key, Object value, Where where) {
-    CassandraUtil.createQuery(key, value, where);
-  }
-
-  protected Statement createDeleteQuery(Map<String, Object> primaryKey, String keyspaceName, String tableName) {
-    return CassandraUtil.createDeleteQuery(primaryKey, keyspaceName, tableName);
-  }
-
-  protected Statement createUpdateQuery(Map<String, Object> primaryKey, Map<String, Object> nonPKRecord, String keyspaceName, String tableName) {
-    return CassandraUtil.createUpdateQuery(primaryKey, nonPKRecord, keyspaceName, tableName);
-  }
-
-  /**
    * List of write types that should be considered successful even if they timeout.
    * Used for handling partial writes in batch operations.
    * Includes BATCH and SIMPLE write types.
@@ -190,14 +145,14 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
     try {
       // Generate prepared statement
-      query = getPreparedStatement(keyspaceName, tableName, request);
+      query = CassandraUtil.getPreparedStatement(keyspaceName, tableName, request);
       PreparedStatement statement = connectionManager.getSession(keyspaceName).prepare(query);
 
       // Log the query for debugging
       logDebug(requestContext, formatLogMessage("Executing CQL query: {}", query));
 
       // Bind values to prepared statement
-      BoundStatement boundStatement = createBoundStatement(statement);
+      BoundStatement boundStatement = new BoundStatement(statement);
       Iterator<Object> iterator = request.values().iterator();
       Object[] array = new Object[request.keySet().size()];
       int i = 0;
@@ -225,7 +180,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
       // Handle unknown/undefined identifier errors
       if (e.getMessage() != null && e.getMessage().contains(JsonKey.UNKNOWN_IDENTIFIER)) {
 
-        String errorMsg = processExceptionForUnknownIdentifier(e);
+        String errorMsg = CassandraUtil.processExceptionForUnknownIdentifier(e);
         logError(
             requestContext, "Invalid column/property error during upsert - keyspace: {}, table: {}, error: {}",
             keyspaceName,
@@ -292,7 +247,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
     try {
       // Generate prepared statement
-      query = getPreparedStatement(keyspaceName, tableName, request);
+      query = CassandraUtil.getPreparedStatement(keyspaceName, tableName, request);
       PreparedStatement statement = connectionManager.getSession(keyspaceName).prepare(query);
 
       // Log the query for debugging
@@ -301,7 +256,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
       }
 
       // Bind values to prepared statement
-      BoundStatement boundStatement = createBoundStatement(statement);
+      BoundStatement boundStatement = new BoundStatement(statement);
       Iterator<Object> iterator = request.values().iterator();
       Object[] array = new Object[request.keySet().size()];
       int i = 0;
@@ -331,7 +286,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           && (e.getMessage().contains(JsonKey.UNKNOWN_IDENTIFIER)
               || e.getMessage().contains(JsonKey.UNDEFINED_IDENTIFIER))) {
 
-        String errorMsg = processExceptionForUnknownIdentifier(e);
+        String errorMsg = CassandraUtil.processExceptionForUnknownIdentifier(e);
         logError(
             requestContext, "Invalid column/property error during insert - keyspace: {}, table: {}, error: {}",
             keyspaceName,
@@ -400,7 +355,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
     try {
       // Generate UPDATE query statement
-      query = getUpdateQueryStatement(keyspaceName, tableName, request);
+      query = CassandraUtil.getUpdateQueryStatement(keyspaceName, tableName, request);
       logDebug(requestContext, formatLogMessage("Executing CQL query: {}", query));
 
       PreparedStatement statement = connectionManager.getSession(keyspaceName).prepare(query);
@@ -444,7 +399,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
       // Handle unknown/undefined identifier errors
       if (e.getMessage() != null && e.getMessage().contains(JsonKey.UNKNOWN_IDENTIFIER)) {
 
-        String errorMsg = processExceptionForUnknownIdentifier(e);
+        String errorMsg = CassandraUtil.processExceptionForUnknownIdentifier(e);
         logError(
             requestContext, "Invalid column/property error during update - keyspace: {}, table: {}, error: {}",
             keyspaceName,
@@ -830,7 +785,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
       // Execute query
       ResultSet results = session.execute(selectQuery);
-      response = createResponse(results);
+      response = CassandraUtil.createResponse(results);
 
       // Log successful query at INFO level
       logInfo(
@@ -914,7 +869,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
       // Execute query
       ResultSet results = connectionManager.getSession(keyspaceName).execute(finalQuery);
-      response = createResponse(results);
+      response = CassandraUtil.createResponse(results);
 
       // Log successful query at INFO level
       logInfo(
@@ -1061,7 +1016,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
       // Execute query
       ResultSet results = connectionManager.getSession(keyspaceName).execute(selectQuery);
-      response = createResponse(results);
+      response = CassandraUtil.createResponse(results);
 
       // Log successful query at INFO level
       logInfo(
@@ -1137,17 +1092,17 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
     try {
       // Generate SELECT statement for specified properties
-      selectQuery = getSelectStatement(keyspaceName, tableName, properties);
+      selectQuery = CassandraUtil.getSelectStatement(keyspaceName, tableName, properties);
       PreparedStatement statement = connectionManager.getSession(keyspaceName).prepare(selectQuery);
 
       logDebug(requestContext, formatLogMessage("Executing CQL query: {}", statement.getQueryString()));
 
       // Bind ID and execute query
-      BoundStatement boundStatement = createBoundStatement(statement);
+      BoundStatement boundStatement = new BoundStatement(statement);
       ResultSet results =
           connectionManager.getSession(keyspaceName).execute(boundStatement.bind(id));
 
-      response = createResponse(results);
+      response = CassandraUtil.createResponse(results);
 
       // Log successful query at INFO level
       logInfo(
@@ -1240,7 +1195,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
       // Execute query
       ResultSet results = connectionManager.getSession(keyspaceName).execute(selectQuery);
-      response = createResponse(results);
+      response = CassandraUtil.createResponse(results);
 
       // Log successful query at INFO level
       logInfo(
@@ -1315,7 +1270,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
       // Execute full table scan
       ResultSet results = connectionManager.getSession(keyspaceName).execute(selectQuery);
-      response = createResponse(results);
+      response = CassandraUtil.createResponse(results);
 
       // Log result count at WARN level (full table scans should be monitored)
       int recordCount =
@@ -1526,7 +1481,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
       // Handle unknown/undefined identifier errors
       if (e.getMessage() != null && e.getMessage().contains(JsonKey.UNKNOWN_IDENTIFIER)) {
 
-        String errorMsg = processExceptionForUnknownIdentifier(e);
+        String errorMsg = CassandraUtil.processExceptionForUnknownIdentifier(e);
         logError(
             requestContext, "Invalid column/property error during composite key update - keyspace: {}, table: {}, error: {}",
             keyspaceName,
@@ -1644,7 +1599,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
         // Add WHERE clauses for each composite key component
         for (Map.Entry<String, Object> entry : compositeKey.entrySet()) {
-          createQuery(entry.getKey(), entry.getValue(), selectWhere);
+          CassandraUtil.createQuery(entry.getKey(), entry.getValue(), selectWhere);
         }
         logDebug(
             requestContext, formatLogMessage("Using composite Map key with {} components", compositeKey.size()));
@@ -1666,7 +1621,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
       // Execute query
       ResultSet results = session.execute(selectWhere);
-      response = createResponse(results);
+      response = CassandraUtil.createResponse(results);
 
       // Log successful query at INFO level
       int recordCount =
@@ -2139,7 +2094,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
       // Build DELETE statements for each primary key
       for (Map<String, Object> primaryKey : primaryKeys) {
         if (primaryKey != null && !primaryKey.isEmpty()) {
-          Statement deleteStatement = createDeleteQuery(primaryKey, keyspaceName, tableName);
+          Statement deleteStatement = CassandraUtil.createDeleteQuery(primaryKey, keyspaceName, tableName);
           batchStatement.add(deleteStatement);
         } else {
           logWarn(requestContext, "Skipping null or empty primary key in batch delete");
@@ -2336,7 +2291,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
       // Execute query
       ResultSet results = connectionManager.getSession(keyspace).execute(selectQuery);
-      response = createResponse(results);
+      response = CassandraUtil.createResponse(results);
 
       // Log successful query at INFO level
       int recordCount =
@@ -2436,7 +2391,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
       // Execute query
       ResultSet results = connectionManager.getSession(keyspaceName).execute(selectQuery);
-      response = createResponse(results);
+      response = CassandraUtil.createResponse(results);
 
       // Log successful query at INFO level
       int recordCount =
@@ -2555,7 +2510,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
         // Create UPDATE query using CassandraUtil
         batchStatement.add(
-            createUpdateQuery(primaryKey, nonPKRecord, keyspaceName, tableName));
+            CassandraUtil.createUpdateQuery(primaryKey, nonPKRecord, keyspaceName, tableName));
       }
 
       logDebug(
@@ -3054,7 +3009,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     } catch (Exception e) {
       // Handle unknown column errors specifically
       if (e.getMessage() != null && e.getMessage().contains(JsonKey.UNKNOWN_IDENTIFIER)) {
-        String processedError = processExceptionForUnknownIdentifier(e);
+        String processedError = CassandraUtil.processExceptionForUnknownIdentifier(e);
         logError(
             requestContext, "Update record V2 failed - unknown column - keyspace: {}, table: {}, error: {}",
             keyspace,

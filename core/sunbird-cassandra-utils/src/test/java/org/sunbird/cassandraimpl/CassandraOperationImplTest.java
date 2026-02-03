@@ -4,8 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
@@ -13,8 +16,10 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Select.Where;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,13 +28,29 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.sunbird.common.CassandraUtil;
 import org.sunbird.common.Constants;
 import org.sunbird.helper.CassandraConnectionManager;
+import org.sunbird.helper.CassandraConnectionMngrFactory;
+import org.sunbird.logging.LoggerUtil;
 import org.sunbird.response.Response;
 import org.sunbird.request.RequestContext;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({
+    CassandraOperationImpl.class,
+    CassandraUtil.class,
+    CassandraConnectionMngrFactory.class,
+    LoggerUtil.class
+})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*", "javax.crypto.*", "javax.script.*", "javax.xml.*", "com.sun.org.apache.xerces.*", "org.xml.*"})
+@SuppressStaticInitializationFor({"org.sunbird.common.CassandraUtil", "org.sunbird.common.CassandraPropertyReader"})
 public class CassandraOperationImplTest {
 
   private CassandraOperationImpl cassandraOperation;
@@ -44,7 +65,7 @@ public class CassandraOperationImplTest {
   private PreparedStatement preparedStatement;
 
   @Mock
-  private BoundStatement boundStatement;
+  private ColumnDefinitions columnDefinitions;
 
   @Mock
   private ResultSet resultSet;
@@ -53,41 +74,50 @@ public class CassandraOperationImplTest {
   private RequestContext requestContext;
 
   @Mock
-  private ColumnDefinitions columnDefinitions;
+  private LoggerUtil loggerUtil;
 
   @Before
   public void setUp() throws Exception {
-    // Note: Mocks are initialized by MockitoJUnitRunner
+    connectionManager = mock(CassandraConnectionManager.class);
+    session = mock(Session.class);
+    preparedStatement = mock(PreparedStatement.class);
+    columnDefinitions = mock(ColumnDefinitions.class);
+    resultSet = mock(ResultSet.class);
+    loggerUtil = mock(LoggerUtil.class);
 
-    cassandraOperation = new CassandraOperationImplConcrete(boundStatement);
-    setConnectionManager(cassandraOperation, connectionManager);
+    // Mock CassandraConnectionMngrFactory.getInstance() BEFORE creating the instance
+    PowerMockito.mockStatic(CassandraConnectionMngrFactory.class);
+    when(CassandraConnectionMngrFactory.getInstance()).thenReturn(connectionManager);
 
+    // Mock LoggerUtil constructor
+    PowerMockito.whenNew(LoggerUtil.class).withAnyArguments().thenReturn(loggerUtil);
+
+    // Initialize concrete implementation
+    cassandraOperation = new CassandraOperationImplConcrete();
+
+    // Setup basic session behavior
     when(connectionManager.getSession(anyString())).thenReturn(session);
     when(session.prepare(anyString())).thenReturn(preparedStatement);
+    when(session.prepare(any(com.datastax.driver.core.RegularStatement.class))).thenReturn(preparedStatement);
 
-    // Mock PreparedStatement.bind calls
-    when(preparedStatement.bind(any(Object[].class))).thenReturn(boundStatement);
-    when(preparedStatement.bind()).thenReturn(boundStatement);
-
-    // Mock PreparedStatement.getVariables for BoundStatement constructor
+    // Setup PreparedStatement to allow BoundStatement creation
     when(preparedStatement.getVariables()).thenReturn(columnDefinitions);
-    when(columnDefinitions.size()).thenReturn(0);
+    when(columnDefinitions.size()).thenReturn(10); // Mock size for arbitrary columns
 
-    // Mock BoundStatement.bind calls
-    when(boundStatement.bind(any(Object[].class))).thenReturn(boundStatement);
-
+    // Mock execution
     when(session.execute(any(BoundStatement.class))).thenReturn(resultSet);
     when(session.execute(any(com.datastax.driver.core.Statement.class))).thenReturn(resultSet);
-  }
 
-  private void setConnectionManager(CassandraOperationImpl operation, CassandraConnectionManager manager) {
-      try {
-          java.lang.reflect.Field field = CassandraOperationImpl.class.getDeclaredField("connectionManager");
-          field.setAccessible(true);
-          field.set(operation, manager);
-      } catch (Exception e) {
-          throw new RuntimeException(e);
-      }
+    // Mock CassandraUtil static methods
+    PowerMockito.mockStatic(CassandraUtil.class);
+    when(CassandraUtil.getPreparedStatement(anyString(), anyString(), anyMap())).thenReturn("INSERT INTO ...");
+    when(CassandraUtil.getUpdateQueryStatement(anyString(), anyString(), anyMap())).thenReturn("UPDATE ...");
+    when(CassandraUtil.getSelectStatement(anyString(), anyString(), any(List.class))).thenReturn("SELECT ...");
+
+    // Mock createResponse to return a valid Response object
+    Response mockResponse = new Response();
+    mockResponse.put(Constants.RESPONSE, Constants.SUCCESS);
+    when(CassandraUtil.createResponse(resultSet)).thenReturn(mockResponse);
   }
 
   @Test
@@ -101,6 +131,7 @@ public class CassandraOperationImplTest {
     Response response = cassandraOperation.insertRecord(keyspaceName, tableName, request, requestContext);
 
     assertEquals(Constants.SUCCESS, response.get(Constants.RESPONSE));
+    verify(session, times(1)).execute(any(BoundStatement.class));
   }
 
   @Test
@@ -111,9 +142,13 @@ public class CassandraOperationImplTest {
     request.put("id", "123");
     request.put("name", "John");
 
+    when(CassandraUtil.getUpdateQueryStatement(anyString(), anyString(), anyMap()))
+        .thenReturn("UPDATE sunbird.user SET name = ? where id = ?;");
+
     Response response = cassandraOperation.updateRecord(keyspaceName, tableName, request, requestContext);
 
     assertEquals(Constants.SUCCESS, response.get(Constants.RESPONSE));
+    verify(session, times(1)).execute(any(BoundStatement.class));
   }
 
   @Test
@@ -125,6 +160,7 @@ public class CassandraOperationImplTest {
     Response response = cassandraOperation.deleteRecord(keyspaceName, tableName, identifier, requestContext);
 
     assertEquals(Constants.SUCCESS, response.get(Constants.RESPONSE));
+    verify(session, times(1)).execute(any(com.datastax.driver.core.Statement.class));
   }
 
   @Test
@@ -135,8 +171,7 @@ public class CassandraOperationImplTest {
 
       Response response = cassandraOperation.getRecordById(keyspaceName, tableName, identifier, requestContext);
 
-      List<?> result = (List<?>) response.get(Constants.RESPONSE);
-      assertEquals("mocked_success", result.get(0));
+      assertEquals(Constants.SUCCESS, response.get(Constants.RESPONSE));
   }
 
   @Test
@@ -148,71 +183,25 @@ public class CassandraOperationImplTest {
 
       Response response = cassandraOperation.getRecordsByProperty(keyspaceName, tableName, propertyName, propertyValue, requestContext);
 
-      List<?> result = (List<?>) response.get(Constants.RESPONSE);
-      assertEquals("mocked_success", result.get(0));
+      assertEquals(Constants.SUCCESS, response.get(Constants.RESPONSE));
   }
 
-  // Concrete implementation for testing with mocked/overridden methods
+  @Test
+  public void testBatchInsert() {
+      String keyspaceName = "sunbird";
+      String tableName = "user";
+      List<Map<String, Object>> records = new ArrayList<>();
+      Map<String, Object> record1 = new HashMap<>();
+      record1.put("id", "1");
+      records.add(record1);
+
+      Response response = cassandraOperation.batchInsert(keyspaceName, tableName, records, requestContext);
+
+      assertEquals(Constants.SUCCESS, response.get(Constants.RESPONSE));
+  }
+
+  // Concrete implementation for testing
   private static class CassandraOperationImplConcrete extends CassandraOperationImpl {
-
-    private BoundStatement mockBoundStatement;
-
-    public CassandraOperationImplConcrete(BoundStatement mockBoundStatement) {
-        this.mockBoundStatement = mockBoundStatement;
-    }
-
-    @Override
-    protected BoundStatement createBoundStatement(PreparedStatement statement) {
-        // Even though we override this, insertRecord calls createBoundStatement(statement)
-        // If we return the mockBoundStatement, we are good.
-        // However, the base class also calls statement.getVariables() inside insertRecord?
-        // No, base class insertRecord:
-        /*
-          BoundStatement boundStatement = createBoundStatement(statement);
-        */
-        // If we override createBoundStatement, the logic inside createBoundStatement is executed.
-        // In this class, we return mockBoundStatement.
-        // So the real BoundStatement constructor is NOT called.
-        // So why did I get NPE on getVariables() earlier?
-        // Ah, because I hadn't overridden createBoundStatement in the test subclass properly?
-        // Or insertRecord was still using new BoundStatement(statement)?
-        // I used replace_with_git_merge_diff to replace new BoundStatement with createBoundStatement.
-        // Let's assume I replaced it correctly.
-        return mockBoundStatement;
-    }
-
-    @Override
-    protected String getPreparedStatement(String keyspaceName, String tableName, Map<String, Object> map) {
-        return "INSERT INTO ...";
-    }
-
-    @Override
-    protected Response createResponse(ResultSet results) {
-        Response response = new Response();
-        response.put(Constants.RESPONSE, Collections.singletonList("mocked_success"));
-        return response;
-    }
-
-    @Override
-    protected String getUpdateQueryStatement(String keyspaceName, String tableName, Map<String, Object> map) {
-        return "UPDATE ...";
-    }
-
-    @Override
-    protected String getSelectStatement(String keyspaceName, String tableName, List<String> properties) {
-        return "SELECT ...";
-    }
-
-    @Override
-    protected String processExceptionForUnknownIdentifier(Exception e) {
-        return "mocked_error";
-    }
-
-    @Override
-    protected void createQuery(String key, Object value, Where where) {
-        // do nothing
-    }
-
     @Override
     public Response getRecordsWithLimit(String keyspace, String table, Map<String, Object> filters, List<String> fields, Integer limit, RequestContext requestContext) {
         return null;
@@ -226,29 +215,6 @@ public class CassandraOperationImplTest {
     @Override
     public Response updateRemoveMapRecord(String keySpace, String table, Map<String, Object> primaryKey, String column, String key, RequestContext requestContext) {
         return null;
-    }
-
-    @Override
-    protected void logError(RequestContext context, String message, Object... args) {
-        System.err.println("LOG ERROR: " + formatLogMessage(message, args));
-        if (args != null && args.length > 0 && args[args.length - 1] instanceof Throwable) {
-            ((Throwable) args[args.length - 1]).printStackTrace();
-        }
-    }
-
-    @Override
-    protected void logInfo(RequestContext context, String message, Object... args) {
-        // no-op or sysout
-    }
-
-    @Override
-    protected void logDebug(RequestContext context, String message, Object... args) {
-        // no-op
-    }
-
-    @Override
-    protected void logWarn(RequestContext context, String message, Object... args) {
-        // no-op
     }
   }
 }
