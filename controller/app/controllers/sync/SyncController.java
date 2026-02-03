@@ -13,7 +13,7 @@ import org.sunbird.exception.ProjectCommonException;
 import org.sunbird.keys.JsonKey;
 import org.sunbird.operations.userorg.ActorOperations;
 import org.sunbird.request.Request;
-import org.sunbird.validator.RequestValidator;
+import org.sunbird.validators.RequestValidator;
 import play.mvc.Http;
 import play.mvc.Result;
 import util.Attrs;

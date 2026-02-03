@@ -38,6 +38,8 @@ import org.sunbird.service.user.UserOrgService;
 import org.sunbird.service.user.UserRoleService;
 import org.sunbird.service.user.UserService;
 import org.sunbird.util.*;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.utils.Slug;
 import org.sunbird.util.user.ProfileUtil;
 import org.sunbird.util.user.UserTncUtil;
 import org.sunbird.util.user.UserUtil;

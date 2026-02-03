@@ -24,7 +24,7 @@ import org.sunbird.operations.userorg.ActorOperations;
 import org.sunbird.request.Request;
 import org.sunbird.response.Response;
 import org.sunbird.response.ResponseParams;
-import org.sunbird.util.EntryExitLogEvent;
+import org.sunbird.logging.EntryExitLogEvent;
 import org.sunbird.common.ProjectUtil;
 
 public class PrintEntryExitLog {

@@ -10,6 +10,7 @@ import org.sunbird.datasecurity.DecryptionService;
 import org.sunbird.datasecurity.EncryptionService;
 import org.sunbird.datasecurity.impl.ServiceFactory;
 import org.sunbird.keys.JsonKey;
+import org.sunbird.common.PropertiesCache;
 import org.sunbird.logging.LoggerUtil;
 
 /**

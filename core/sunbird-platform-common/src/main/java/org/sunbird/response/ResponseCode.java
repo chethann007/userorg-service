@@ -127,6 +127,7 @@ public enum ResponseCode {
       ResponseMessage.Key.PHONE_ALREADY_IN_USE, ResponseMessage.Message.PHONE_ALREADY_IN_USE),
   userAccountlocked(
       ResponseMessage.Key.USER_ACCOUNT_BLOCKED, ResponseMessage.Message.USER_ACCOUNT_BLOCKED),
+  userStatusError(ResponseMessage.Key.USER_STATUS_MSG, ResponseMessage.Message.USER_STATUS_MSG),
   userAlreadyActive(
       ResponseMessage.Key.USER_ALREADY_ACTIVE, ResponseMessage.Message.USER_ALREADY_ACTIVE),
   userAlreadyInactive(
@@ -630,9 +631,6 @@ public enum ResponseCode {
   defaultSecurityLevelConfigMissing(
       ResponseMessage.Key.DEFAULT_SECURITY_LEVEL_CONFIG_MISSING,
       ResponseMessage.Message.DEFAULT_SECURITY_LEVEL_CONFIG_MISSING),
-  declaredUserValidatedStatusNotUpdated(
-      ResponseMessage.Key.DECLARED_USER_VALIDATED_STATUS_NOT_UPDATED,
-      ResponseMessage.Message.DECLARED_USER_VALIDATED_STATUS_NOT_UPDATED),
   errorUserMigrationFailed(
       ResponseMessage.Key.ERROR_USER_MIGRATION_FAILED,
       ResponseMessage.Message.ERROR_USER_MIGRATION_FAILED),
@@ -802,20 +800,48 @@ public enum ResponseCode {
   externalIdFormatError(ResponseMessage.Key.EXTERNAL_ID_FORMAT_ERROR, ResponseMessage.Message.EXTERNAL_ID_FORMAT),
   userTypeConfigIsEmpty(ResponseMessage.Key.USER_TYPE_CONFIG_IS_EMPTY, ResponseMessage.Message.USER_TYPE_CONFIG_IS_EMPTY),
   passwordValidation(ResponseMessage.Key.INVALID_PASSWORD, ResponseMessage.Message.INVALID_PASSWORD),
-  OnlyEmailorPhoneorManagedByRequired(ResponseMessage.Key.EMAIL_OR_PHONE_MISSING, ResponseMessage.Message.EMAIL_OR_PHONE_MISSING),
+  OnlyEmailorPhoneorManagedByRequired(
+      ResponseMessage.Key.ONLY_EMAIL_OR_PHONE_OR_MANAGEDBY_REQUIRED,
+      ResponseMessage.Message.ONLY_EMAIL_OR_PHONE_OR_MANAGEDBY_REQUIRED),
   dataFormatError(ResponseMessage.Key.INVALID_DATA, ResponseMessage.Message.INVALID_DATA),
   managedByNotAllowed(ResponseMessage.Key.MANAGED_BY_NOT_ALLOWED, ResponseMessage.Message.MANAGED_BY_NOT_ALLOWED),
   errorInvalidParameterSize(ResponseMessage.Key.INVALID_PARAMETER_SIZE, ResponseMessage.Message.INVALID_PARAMETER_SIZE),
   errorConflictingValues(ResponseMessage.Key.CONFLICTING_VALUES, ResponseMessage.Message.CONFLICTING_VALUES),
   errorConflictingRootOrgId(ResponseMessage.Key.CONFLICTING_ROOT_ORG_ID, ResponseMessage.Message.CONFLICTING_ROOT_ORG_ID),
-  declaredUserErrorStatusNotUpdated(ResponseMessage.Key.DECLARED_USER_VALIDATED_STATUS_NOT_UPDATED, ResponseMessage.Message.DECLARED_USER_VALIDATED_STATUS_NOT_UPDATED);
+  declaredUserErrorStatusNotUpdated(
+      ResponseMessage.Key.DECLARED_USER_ERROR_STATUS_IS_NOT_UPDATED,
+      ResponseMessage.Message.DECLARED_USER_ERROR_STATUS_IS_NOT_UPDATED),
+  declaredUserValidatedStatusNotUpdated(
+      ResponseMessage.Key.DECLARED_USER_VALIDATED_STATUS_IS_NOT_UPDATED,
+      ResponseMessage.Message.DECLARED_USER_VALIDATED_STATUS_IS_NOT_UPDATED),
   invalidDuplicateValueInList(
       ResponseMessage.Key.INVALID_DUPLICATE_VALUE, ResponseMessage.Message.INVALID_DUPLICATE_VALUE),
+  sizeLimitExceed(
+      ResponseMessage.Key.MAX_ALLOWED_SIZE_LIMIT_EXCEED,
+      ResponseMessage.Message.MAX_ALLOWED_SIZE_LIMIT_EXCEED),
+  inactiveUser(ResponseMessage.Key.INACTIVE_USER, ResponseMessage.Message.INACTIVE_USER),
+  managedUserLimitExceeded(
+      ResponseMessage.Key.MANAGED_USER_LIMIT_EXCEEDED,
+      ResponseMessage.Message.MANAGED_USER_LIMIT_EXCEEDED),
+  invalidCaptcha(ResponseMessage.Key.INVALID_CAPTCHA, ResponseMessage.Message.INVALID_CAPTCHA),
+  invalidConsentStatus(
+      ResponseMessage.Key.INVALID_CONSENT_STATUS, ResponseMessage.Message.INVALID_CONSENT_STATUS),
+  cannotDeleteUser(
+      ResponseMessage.Key.CANNOT_DELETE_USER, ResponseMessage.Message.CANNOT_DELETE_USER),
+  cannotTransferOwnership(
+      ResponseMessage.Key.CANNOT_TRANSFER_OWNERSHIP, ResponseMessage.Message.CANNOT_TRANSFER_OWNERSHIP),
+  extendUserProfileNotLoaded(
+      ResponseMessage.Key.EXTENDED_USER_PROFILE_NOT_LOADED,
+      ResponseMessage.Message.EXTENDED_USER_PROFILE_NOT_LOADED),
+  roleProcessingInvalidOrgError(
+      ResponseMessage.Key.ROLE_PROCESSING_INVALID_ORG,
+      ResponseMessage.Message.ROLE_PROCESSING_INVALID_ORG),
 
   // -------------------------------------------------------------------------
   // HTTP Status Codes & System Codes
   // -------------------------------------------------------------------------
   OK(200),
+  SUCCESS(200),
   CLIENT_ERROR(400),
   SERVER_ERROR(500),
   ERROR(ResponseMessage.Key.ERR_CALLING_EXHAUST_API, ResponseMessage.Message.ERR_CALLING_EXHAUST_API),
@@ -825,7 +851,8 @@ public enum ResponseCode {
   REDIRECTION_REQUIRED(302),
   TOO_MANY_REQUESTS(429),
   SERVICE_UNAVAILABLE(503),
-  PARTIAL_SUCCESS_RESPONSE(206);
+  PARTIAL_SUCCESS_RESPONSE(206),
+  IM_A_TEAPOT(418);
 
   private int responseCode;
   /** error code contains String value */
@@ -928,6 +955,21 @@ public enum ResponseCode {
    */
   public String getMessage(int errorCode) {
     return "";
+  }
+
+  /**
+   * Gets the ResponseCode enum by its integer value (response code).
+   *
+   * @param code int - The response code value.
+   * @return ResponseCode - The matching ResponseCode enum.
+   */
+  public static ResponseCode getResponseCodeByCode(int code) {
+    for (ResponseCode responseCode : ResponseCode.values()) {
+      if (responseCode.getResponseCode() == code) {
+        return responseCode;
+      }
+    }
+    return null;
   }
 
   /**

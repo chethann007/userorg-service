@@ -90,6 +90,7 @@ public interface ResponseMessage {
     String EMAIL_IN_USE = "Email already exists.";
     String PHONE_ALREADY_IN_USE = "Phone already in use. Please provide different phone number.";
     String USER_ACCOUNT_BLOCKED = "User account has been blocked .";
+    String USER_STATUS_MSG = "User is already {0}.";
     String USER_ALREADY_ACTIVE = "User is already active.";
     String USER_ALREADY_INACTIVE = "User is already inactive.";
     String USER_REG_UNSUCCESSFUL = "User Registration unsuccessful.";
@@ -362,12 +363,25 @@ public interface ResponseMessage {
     String INVALID_SECURITY_LEVEL_LOWER = "Security level cannot be lower than existing level";
     String DEFAULT_SECURITY_LEVEL_CONFIG_MISSING = "Default security level configuration is missing";
     String DECLARED_USER_VALIDATED_STATUS_NOT_UPDATED = "Declared user validated status could not be updated";
+    String DECLARED_USER_ERROR_STATUS_IS_NOT_UPDATED = "Declared user error status is not updated";
+    String DECLARED_USER_VALIDATED_STATUS_IS_NOT_UPDATED = "Declared user validated status is not updated";
     String ERROR_USER_MIGRATION_FAILED = "User migration failed";
     String FILE_ATTACHMENT_SIZE_NOT_CONFIGURED = "File attachment max size is not configured.";
     String ERROR_CREATING_FILE = "Error Reading File";
     String ERROR_PROCESSING_FILE =
         "Something Went Wrong While Reading File. Please Check The File.";
     String ERROR_PROCESSING_REQUEST = "Something went wrong while Processing Request";
+    String ONLY_EMAIL_OR_PHONE_OR_MANAGEDBY_REQUIRED = "Please provide only email or phone or managed by";
+    String INACTIVE_USER = "User is Inactive. Please make it active to proceed.";
+    String MANAGED_USER_LIMIT_EXCEEDED = "Managed user creation limit exceeded";
+    String INVALID_CAPTCHA = "Captcha is invalid";
+    String INVALID_CONSENT_STATUS = "Consent status is invalid";
+    String EXTENDED_USER_PROFILE_NOT_LOADED = "Failed to load extendedProfileSchemaConfig from System_Settings table";
+    String ROLE_PROCESSING_INVALID_ORG = "Error while processing assign role. Invalid Organisation Id";
+    String CANNOT_DELETE_USER = "User is restricted from deleting account based on roles!";
+    String CANNOT_TRANSFER_OWNERSHIP = "User is restricted from transfering the ownership based on roles!";
+    String PARAM_NOT_MATCH = "{0} should not be same as {1}";
+    String ERROR_USER_UPDATE_PASSWORD = "User is not allowed to update password";
 
     // -------------------------------------------------------------------------
     // Miscellaneous
@@ -449,6 +463,12 @@ public interface ResponseMessage {
     String ERROR_REGISTRY_ENTITY_ID_BLANK = "Request failed as entity id is not provided.";
     String ERROR_REGISTRY_ACCESS_TOKEN_BLANK =
         "Request failed as user access token is not provided.";
+    String EXTERNAL_ID_FORMAT = "External id format error.";
+    String USER_TYPE_CONFIG_IS_EMPTY = "User type configuration is empty.";
+    String MANAGED_BY_NOT_ALLOWED = "managedBy cannot be updated.";
+    String INVALID_PARAMETER_SIZE = "Parameter {0} is of invalid size (expected: {1}, actual: {2}).";
+    String CONFLICTING_VALUES = "Conflicting values for {0} ({1}) and {2} ({3}).";
+    String CONFLICTING_ROOT_ORG_ID = "Root organisation channel of uploader user is conflicting with that of specified organisation ID/orgExternalId channel value.";
   }
 
   interface Key {
@@ -526,6 +546,7 @@ public interface ResponseMessage {
     String EMAIL_IN_USE = "EMAIL_IN_USE";
     String PHONE_ALREADY_IN_USE = "PHONE_ALREADY_IN_USE";
     String USER_ACCOUNT_BLOCKED = "USER_ACCOUNT_BLOCKED";
+    String USER_STATUS_MSG = "0008";
     String USER_ALREADY_ACTIVE = "USER_ALREADY_ACTIVE";
     String USER_ALREADY_INACTIVE = "USER_ALREADY_INACTIVE";
     String USER_REG_UNSUCCESSFUL = "USER_REG_UNSUCCESSFUL";
@@ -665,8 +686,6 @@ public interface ResponseMessage {
     String MISSING_CODE = "ERR_COURSE_CREATE_FIELDS_MISSING";
     String CONTENT_TYPE_MISMATCH = "CONTENT_TYPE_MISMATCH";
     String MIME_TYPE_MISMATCH = "MIME_TYPE_MISMATCH";
-    String EXTERNAL_ID_FORMAT = "External id format error.";
-    String USER_TYPE_CONFIG_IS_EMPTY = "User type configuration is empty.";
 
     // -------------------------------------------------------------------------
     // Content & Assessment
@@ -833,6 +852,20 @@ public interface ResponseMessage {
     String INVALID_PARAMETER_SIZE = "INVALID_PARAMETER_SIZE";
     String CONFLICTING_VALUES = "CONFLICTING_VALUES";
     String CONFLICTING_ROOT_ORG_ID = "CONFLICTING_ROOT_ORG_ID";
+
+    String ONLY_EMAIL_OR_PHONE_OR_MANAGEDBY_REQUIRED = "ONLY_EMAIL_OR_PHONE_OR_MANAGEDBY_REQUIRED";
+    String INACTIVE_USER = "INACTIVE_USER";
+    String MANAGED_USER_LIMIT_EXCEEDED = "MANAGED_USER_LIMIT_EXCEEDED";
+    String INVALID_CAPTCHA = "INVALID_CAPTCHA";
+    String DECLARED_USER_ERROR_STATUS_IS_NOT_UPDATED = "DECLARED_USER_ERROR_STATUS_IS_NOT_UPDATED";
+    String DECLARED_USER_VALIDATED_STATUS_IS_NOT_UPDATED = "DECLARED_USER_VALIDATED_STATUS_IS_NOT_UPDATED";
+    String INVALID_CONSENT_STATUS = "INVALID_CONSENT_STATUS";
+    String EXTENDED_USER_PROFILE_NOT_LOADED = "EXTENDED_USER_PROFILE_NOT_LOADED";
+    String ROLE_PROCESSING_INVALID_ORG = "ROLE_PROCESSING_INVALID_ORG";
+    String CANNOT_DELETE_USER = "CANNOT_DELETE_USER";
+    String CANNOT_TRANSFER_OWNERSHIP = "CANNOT_TRANSFER_OWNERSHIP";
+    String PARAM_NOT_MATCH = "PARAM_NOT_MATCH";
+    String ERROR_USER_UPDATE_PASSWORD = "ERROR_USER_UPDATE_PASSWORD";
 
     // -------------------------------------------------------------------------
     // JSON Transform (Registry)

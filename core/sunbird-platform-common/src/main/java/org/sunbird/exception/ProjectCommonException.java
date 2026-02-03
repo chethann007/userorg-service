@@ -174,13 +174,15 @@ public class ProjectCommonException extends RuntimeException {
   }
 
   /**
-   * Gets the HTTP response code. Kept for backward compatibility.
+   * Gets the ResponseCode enum. Kept for backward compatibility.
    *
-   * @return The integer HTTP response code.
-   * @see #getErrorResponseCode()
+   * @return The ResponseCode enum.
    */
-  public int getResponseCode() {
-      return errorResponseCode;
+  public ResponseCode getResponseCode() {
+      if (responseCode == null) {
+          return ResponseCode.getResponse(errorCode);
+      }
+      return responseCode;
   }
   
   /**

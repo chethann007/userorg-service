@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.sunbird.keys.JsonKey;
 import org.sunbird.logging.LoggerUtil;
 import org.sunbird.request.RequestContext;
-import org.sunbird.sso.KeycloakRequiredActionLinkUtil;
+import org.sunbird.keycloak.KeycloakRequiredActionLinkUtil;
 import org.sunbird.url.URLShortner;
 import org.sunbird.url.URLShortnerImpl;
 import org.sunbird.common.ProjectUtil;

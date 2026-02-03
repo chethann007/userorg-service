@@ -9,7 +9,7 @@ import org.sunbird.operations.userorg.ActorOperations;
 import org.sunbird.request.Request;
 import org.sunbird.common.ProjectUtil;
 import org.sunbird.validators.BaseRequestValidator;
-import org.sunbird.validator.orgvalidator.OrgRequestValidator;
+import org.sunbird.validators.orgvalidator.OrgRequestValidator;
 import play.mvc.Http;
 import play.mvc.Result;
 

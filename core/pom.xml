@@ -95,6 +95,7 @@
         <module>sunbird-es-utils</module>
         <module>actor-core</module>
         <module>sunbird-event-utils</module>
+        <module>notification-utils</module>
     </modules>
 
     <build>

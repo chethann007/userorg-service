@@ -5,6 +5,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.user.validator.UserCreateRequestValidator;
 import org.sunbird.common.ElasticSearchHelper;
+import org.sunbird.common.ProjectUtil;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.exception.ProjectCommonException;
 import org.sunbird.keys.JsonKey;

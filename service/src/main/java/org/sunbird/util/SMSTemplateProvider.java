@@ -10,6 +10,7 @@ import org.apache.velocity.runtime.RuntimeSingleton;
 import org.apache.velocity.runtime.parser.node.SimpleNode;
 import org.sunbird.dao.notification.EmailTemplateDao;
 import org.sunbird.dao.notification.impl.EmailTemplateDaoImpl;
+import org.sunbird.common.ProjectUtil;
 import org.sunbird.keys.JsonKey;
 import org.sunbird.logging.LoggerUtil;
 import org.sunbird.request.RequestContext;

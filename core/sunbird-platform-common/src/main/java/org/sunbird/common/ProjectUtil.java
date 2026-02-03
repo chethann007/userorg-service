@@ -69,7 +69,7 @@ public class ProjectUtil {
   };
   public static PropertiesCache propertiesCache;
   private static Pattern pattern;
-  private static final String EMAIL_PATTERN =
+  public static final String EMAIL_PATTERN =
       "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
           + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
   public static final String[] excludes =
@@ -116,11 +116,28 @@ public class ProjectUtil {
    */
   public enum Status {
     ACTIVE(1),
-    INACTIVE(0);
+    INACTIVE(0),
+    DELETED(2);
 
     private int value;
 
     Status(int value) {
+      this.value = value;
+    }
+
+    public int getValue() {
+      return this.value;
+    }
+  }
+
+  public enum ProgressStatus {
+    NOT_STARTED(0),
+    STARTED(1),
+    COMPLETED(2);
+
+    private int value;
+
+    ProgressStatus(int value) {
       this.value = value;
     }
 
@@ -166,25 +183,6 @@ public class ProjectUtil {
     }
 
     public Integer getValue() {
-      return this.value;
-    }
-  }
-
-  /**
-   * Enumeration for Progress Status.
-   */
-  public enum ProgressStatus {
-    NOT_STARTED(0),
-    STARTED(1),
-    COMPLETED(2);
-
-    private int value;
-
-    ProgressStatus(int value) {
-      this.value = value;
-    }
-
-    public int getValue() {
       return this.value;
     }
   }
@@ -413,6 +411,8 @@ public class ProjectUtil {
     user(EsConfigUtil.getConfigValue(JsonKey.ES_USER_INDEX)),
     organisation(EsConfigUtil.getConfigValue(JsonKey.ES_ORGANISATION_INDEX)),
     usercourses(EsConfigUtil.getConfigValue(JsonKey.ES_USER_COURSES_INDEX)),
+    usernotes(EsConfigUtil.getConfigValue(JsonKey.ES_USER_NOTES_INDEX)),
+    userfeed(EsConfigUtil.getConfigValue(JsonKey.ES_USER_FEED_INDEX)),
     location(EsConfigUtil.getConfigValue(JsonKey.ES_LOCATION_INDEX));
 
     private String typeName;
@@ -1132,6 +1132,14 @@ public class ProjectUtil {
     return new ProjectCommonException(
         responseCode.getErrorCode(),
         responseCode.getErrorMessage(),
+        ResponseCode.CLIENT_ERROR.getResponseCode());
+  }
+
+  public static ProjectCommonException createClientException(
+      ResponseCode responseCode, String exceptionMessage) {
+    return new ProjectCommonException(
+        responseCode.getErrorCode(),
+        StringUtils.isBlank(exceptionMessage) ? responseCode.getErrorMessage() : exceptionMessage,
         ResponseCode.CLIENT_ERROR.getResponseCode());
   }
 
