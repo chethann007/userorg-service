@@ -19,13 +19,16 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.keys.JsonKey;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.mockito.Mockito;
 
+/**
+ * Unit tests for ElasticSearchHelper.
+ */
 public class ElasticSearchHelperTest {
 
+  /**
+   * Test getSortOrder method.
+   * Verifies correct SortOrder enum is returned for valid strings and default is DESC.
+   */
   @Test
   public void testGetSortOrder() {
     assertEquals(SortOrder.ASC, ElasticSearchHelper.getSortOrder("ASC"));
@@ -35,6 +38,9 @@ public class ElasticSearchHelperTest {
     assertEquals(SortOrder.DESC, ElasticSearchHelper.getSortOrder("invalid"));
   }
 
+  /**
+   * Test createMatchQuery method with boost.
+   */
   @Test
   public void testCreateMatchQuery() {
     MatchQueryBuilder query = ElasticSearchHelper.createMatchQuery("fieldName", "value", 1.5f);
@@ -43,6 +49,9 @@ public class ElasticSearchHelperTest {
     assertEquals("value", query.value());
   }
 
+  /**
+   * Test createMatchQuery method without boost.
+   */
   @Test
   public void testCreateMatchQueryWithoutBoost() {
     MatchQueryBuilder query = ElasticSearchHelper.createMatchQuery("fieldName", "value", null);
@@ -51,6 +60,9 @@ public class ElasticSearchHelperTest {
     assertEquals("value", query.value());
   }
 
+  /**
+   * Test getConstraints method with valid constraints.
+   */
   @Test
   public void testGetConstraints() {
     SearchDTO searchDTO = new SearchDTO();
@@ -66,6 +78,9 @@ public class ElasticSearchHelperTest {
     assertEquals(5.0f, constraints.get("field2"), 0.001);
   }
 
+  /**
+   * Test getConstraints method with empty constraints.
+   */
   @Test
   public void testGetConstraintsEmpty() {
     SearchDTO searchDTO = new SearchDTO();
@@ -74,6 +89,9 @@ public class ElasticSearchHelperTest {
     assertTrue(constraints.isEmpty());
   }
 
+  /**
+   * Test calculateEndTime method.
+   */
   @Test
   public void testCalculateEndTime() {
     long startTime = System.currentTimeMillis();
@@ -81,6 +99,9 @@ public class ElasticSearchHelperTest {
     assertTrue(endTime >= 0);
   }
 
+  /**
+   * Test createSearchDTO method with standard Integer limit/offset.
+   */
   @Test
   public void testCreateSearchDTO() {
     Map<String, Object> searchQueryMap = new HashMap<>();
@@ -101,6 +122,9 @@ public class ElasticSearchHelperTest {
     assertEquals(fields, searchDTO.getFields());
   }
 
+  /**
+   * Test createSearchDTO method with BigInteger limit/offset.
+   */
   @Test
   public void testCreateSearchDTOWithBigInteger() {
       Map<String, Object> searchQueryMap = new HashMap<>();
@@ -114,6 +138,9 @@ public class ElasticSearchHelperTest {
       assertEquals((Integer) 5, searchDTO.getOffset());
   }
 
+  /**
+   * Test createLexicalQuery method for STARTS_WITH operation.
+   */
   @Test
   public void testCreateLexicalQueryStartsWith() {
     Map<String, Object> operation = new HashMap<>();
@@ -123,6 +150,9 @@ public class ElasticSearchHelperTest {
     assertTrue(query.toString().contains("prefix"));
   }
 
+  /**
+   * Test createLexicalQuery method for ENDS_WITH operation.
+   */
   @Test
   public void testCreateLexicalQueryEndsWith() {
     Map<String, Object> operation = new HashMap<>();
@@ -132,6 +162,9 @@ public class ElasticSearchHelperTest {
     assertTrue(query.toString().contains("~suffix"));
   }
 
+  /**
+   * Test addAdditionalProperties method for FILTERS.
+   */
   @Test
   public void testAddAdditionalPropertiesFilters() {
       BoolQueryBuilder query = QueryBuilders.boolQuery();
@@ -148,6 +181,9 @@ public class ElasticSearchHelperTest {
       assertTrue(queryString.contains("active"));
   }
 
+  /**
+   * Test addAdditionalProperties method for EXISTS.
+   */
   @Test
   public void testAddAdditionalPropertiesExists() {
       BoolQueryBuilder query = QueryBuilders.boolQuery();
@@ -164,6 +200,9 @@ public class ElasticSearchHelperTest {
       assertTrue(queryString.contains("field2"));
   }
 
+  /**
+   * Test addAdditionalProperties method for NOT_EXISTS.
+   */
   @Test
   public void testAddAdditionalPropertiesNotExists() {
       BoolQueryBuilder query = QueryBuilders.boolQuery();
@@ -180,6 +219,9 @@ public class ElasticSearchHelperTest {
       assertTrue(queryString.contains("field1"));
   }
 
+  /**
+   * Test createFuzzyMatchQuery method.
+   */
   @Test
   public void testCreateFuzzyMatchQuery() {
       BoolQueryBuilder query = QueryBuilders.boolQuery();
@@ -190,6 +232,9 @@ public class ElasticSearchHelperTest {
       assertTrue(queryString.contains("AUTO"));
   }
 
+  /**
+   * Test addAdditionalProperties method for NESTED_EXISTS.
+   */
   @Test
   public void testAddAdditionalPropertiesNestedExists() {
       BoolQueryBuilder query = QueryBuilders.boolQuery();
@@ -207,5 +252,4 @@ public class ElasticSearchHelperTest {
       assertTrue(queryString.contains("exists"));
       assertTrue(queryString.contains("nestedField"));
   }
-
 }

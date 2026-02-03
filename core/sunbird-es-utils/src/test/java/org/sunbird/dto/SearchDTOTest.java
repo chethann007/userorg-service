@@ -10,8 +10,15 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 
+/**
+ * Unit tests for SearchDTO.
+ */
 public class SearchDTOTest {
 
+  /**
+   * Test the default constructor of SearchDTO.
+   * Verifies that lists and maps are initialized and default values are set.
+   */
   @Test
   public void testSearchDTODefaultConstructor() {
     SearchDTO searchDTO = new SearchDTO();
@@ -27,6 +34,10 @@ public class SearchDTOTest {
     assertEquals((Integer) 0, searchDTO.getOffset());
   }
 
+  /**
+   * Test the parameterized constructor of SearchDTO.
+   * Verifies that properties, operation, and limit are set correctly.
+   */
   @Test
   public void testSearchDTOParameterizedConstructor() {
     List<Map> properties = new ArrayList<>();
@@ -38,6 +49,9 @@ public class SearchDTOTest {
     assertEquals((Integer) limit, searchDTO.getLimit());
   }
 
+  /**
+   * Test all getters and setters of SearchDTO.
+   */
   @Test
   public void testGettersAndSetters() {
     SearchDTO searchDTO = new SearchDTO();
@@ -107,6 +121,9 @@ public class SearchDTOTest {
     assertEquals(mode, searchDTO.getMode());
   }
 
+  /**
+   * Test addAdditionalProperty and getAdditionalProperty methods.
+   */
   @Test
   public void testAdditionalPropertyMethods() {
     SearchDTO searchDTO = new SearchDTO();
@@ -117,6 +134,9 @@ public class SearchDTOTest {
     assertEquals(value, searchDTO.getAdditionalProperty(key));
   }
 
+  /**
+   * Test setting and getting GroupQuery.
+   */
   @Test
   public void testGroupQueryUsage() {
       SearchDTO searchDTO = new SearchDTO();
